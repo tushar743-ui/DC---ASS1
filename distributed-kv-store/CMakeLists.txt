@@ -1,23 +1,18 @@
-cmake_minimum_required(VERSION 3.16)
-project(distributed_kv_store LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.10)
+project(distributed-kv-store)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Server binary
 add_executable(server
-	server/server.cpp
-	server/storage.cpp
+    server/server.cpp
+    server/storage.cpp
 )
+target_include_directories(server PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(server pthread)
 
-target_include_directories(server PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/server
-)
-
+# Client binary
 add_executable(client
-	client/client.cpp
+    client/client.cpp
 )
-
-target_include_directories(client PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}
-)
+target_include_directories(client PRIVATE ${CMAKE_SOURCE_DIR})

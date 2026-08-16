@@ -1,10 +1,15 @@
 #pragma once
 
-// Hardcoded cluster/network settings
-static constexpr const char* SERVER1_IP = "127.0.0.1";
-static constexpr int SERVER1_PORT = 5001;
+// Primary server settings
+#define PRIMARY_HOST "127.0.0.1"
+#define PRIMARY_PORT 8080
 
-static constexpr const char* SERVER2_IP = "127.0.0.1";
-static constexpr int SERVER2_PORT = 5002;
+// Replica server settings
+#define REPLICA_HOST "127.0.0.1"
+#define REPLICA_PORT 8081
 
-static constexpr int REPLICATION_FACTOR = 2;
+// Max simultaneous clients
+#define MAX_CLIENTS 10
+
+// Buffer size for messages
+#define BUFFER_SIZE 1024
