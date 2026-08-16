@@ -1,0 +1,4 @@
+/home/tushar/Desktop/Dev/DC-ASS-1/DC---ASS1/distributed-kv-store/build/CMakeFiles/server.dir
+/home/tushar/Desktop/Dev/DC-ASS-1/DC---ASS1/distributed-kv-store/build/CMakeFiles/client.dir
+/home/tushar/Desktop/Dev/DC-ASS-1/DC---ASS1/distributed-kv-store/build/CMakeFiles/edit_cache.dir
+/home/tushar/Desktop/Dev/DC-ASS-1/DC---ASS1/distributed-kv-store/build/CMakeFiles/rebuild_cache.dir

@@ -10,15 +10,10 @@
 #include "../config.h"
 #include "storage.h"
 
-// Global storage instance shared across all threads
 Storage storage;
 
-// Is this server the primary? (set via command-line arg)
 bool is_primary = false;
 
-// ---------------------------------------------------------------------------
-// Replicate a write command to the replica server
-// ---------------------------------------------------------------------------
 void replicate_to_replica(const std::string& command) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) return;
@@ -37,13 +32,10 @@ void replicate_to_replica(const std::string& command) {
     send(sock, command.c_str(), command.size(), 0);
 
     char buf[BUFFER_SIZE] = {};
-    recv(sock, buf, sizeof(buf), 0);   // wait for replica ACK
+    recv(sock, buf, sizeof(buf), 0);
     close(sock);
 }
 
-// ---------------------------------------------------------------------------
-// Parse and execute one command string; return the response string
-// ---------------------------------------------------------------------------
 std::string handle_command(const std::string& command) {
     std::istringstream ss(command);
     std::string op, key, value;
@@ -52,7 +44,6 @@ std::string handle_command(const std::string& command) {
     if (op == "PUT") {
         ss >> value;
         std::string result = storage.put(key, value);
-        // Replicate writes to replica only from primary
         if (is_primary) {
             replicate_to_replica(command);
         }
@@ -72,9 +63,6 @@ std::string handle_command(const std::string& command) {
     return "ERROR unknown command";
 }
 
-// ---------------------------------------------------------------------------
-// Thread function — one thread per connected client
-// ---------------------------------------------------------------------------
 void* client_thread(void* arg) {
     int client_fd = *(int*)arg;
     delete (int*)arg;
@@ -84,10 +72,9 @@ void* client_thread(void* arg) {
     while (true) {
         memset(buf, 0, sizeof(buf));
         int bytes = recv(client_fd, buf, sizeof(buf) - 1, 0);
-        if (bytes <= 0) break;   // client disconnected
+        if (bytes <= 0) break;
 
         std::string command(buf);
-        // Strip trailing newline/carriage return
         while (!command.empty() && (command.back() == '\n' || command.back() == '\r'))
             command.pop_back();
 
@@ -101,9 +88,6 @@ void* client_thread(void* arg) {
     return nullptr;
 }
 
-// ---------------------------------------------------------------------------
-// Main — set up the server socket and accept loop
-// ---------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cerr << "Usage: ./server [primary|replica]\n";
@@ -113,15 +97,12 @@ int main(int argc, char* argv[]) {
     is_primary = (std::string(argv[1]) == "primary");
     int port   = is_primary ? PRIMARY_PORT : REPLICA_PORT;
 
-    // 1. Create TCP socket
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) { perror("socket"); return 1; }
 
-    // Allow port reuse after restart
     int opt = 1;
     setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
-    // 2. Bind to IP and port
     sockaddr_in addr{};
     addr.sin_family      = AF_INET;
     addr.sin_port        = htons(port);
@@ -131,14 +112,12 @@ int main(int argc, char* argv[]) {
         perror("bind"); return 1;
     }
 
-    // 3. Listen for incoming connections
     if (listen(server_fd, MAX_CLIENTS) < 0) {
         perror("listen"); return 1;
     }
 
     std::cout << "[" << argv[1] << "] Listening on port " << port << " ...\n";
 
-    // 4. Accept loop — spawn a thread for each client
     while (true) {
         sockaddr_in client_addr{};
         socklen_t   client_len = sizeof(client_addr);
@@ -148,11 +127,10 @@ int main(int argc, char* argv[]) {
 
         std::cout << "[Server] New connection accepted\n";
 
-        // Pass fd to a new thread
         int* fd_ptr = new int(client_fd);
         pthread_t tid;
         pthread_create(&tid, nullptr, client_thread, fd_ptr);
-        pthread_detach(tid);   // auto-cleanup when thread finishes
+        pthread_detach(tid);
     }
 
     close(server_fd);

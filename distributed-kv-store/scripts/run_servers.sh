@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Build first
 cd "$(dirname "$0")/.."
 mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release > /dev/null
@@ -23,6 +22,5 @@ echo "Replica PID : $REPLICA_PID"
 echo ""
 echo "Press Ctrl+C to stop both servers."
 
-# Wait and kill both on Ctrl+C
 trap "kill $PRIMARY_PID $REPLICA_PID 2>/dev/null; echo 'Servers stopped.'" INT
 wait

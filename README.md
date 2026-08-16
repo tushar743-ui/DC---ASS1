@@ -11,17 +11,13 @@ A simple distributed key-value store built with Berkeley sockets in C++.
 ## Build & Run
 
 ```bash
-# Build
 mkdir build && cd build
 cmake .. && make
 
-# Terminal 1 — start replica first
 ./server replica
 
-# Terminal 2 — start primary
 ./server primary
 
-# Terminal 3 — run client
 ./client
 ```
 

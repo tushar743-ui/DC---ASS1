@@ -3,7 +3,6 @@ project(distributed-kv-store)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Server binary
 add_executable(server
     server/server.cpp
     server/storage.cpp
@@ -11,7 +10,6 @@ add_executable(server
 target_include_directories(server PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(server pthread)
 
-# Client binary
 add_executable(client
     client/client.cpp
 )

@@ -8,23 +8,12 @@
 
 #include "../config.h"
 
-// ---------------------------------------------------------------------------
-// Pick the correct server node using simple modulo hashing on the key
-// Returns the port of the selected node
-// ---------------------------------------------------------------------------
 int get_node_port(const std::string& key) {
-    // Two nodes: 0 → primary, 1 → primary (client always writes to primary)
-    // In a larger system this would route to different primaries
-    // For simplicity, client always connects to PRIMARY
     (void)key;
     return PRIMARY_PORT;
 }
 
-// ---------------------------------------------------------------------------
-// Send one command to the server and return the response
-// ---------------------------------------------------------------------------
 std::string send_command(const std::string& command, int port) {
-    // Create TCP socket
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) return "ERROR: socket creation failed";
 
@@ -33,33 +22,26 @@ std::string send_command(const std::string& command, int port) {
     server_addr.sin_port   = htons(port);
     inet_pton(AF_INET, PRIMARY_HOST, &server_addr.sin_addr);
 
-    // Connect to server
     if (connect(sock, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         close(sock);
         return "ERROR: could not connect to server";
     }
 
-    // Send the command
     std::string msg = command + "\n";
     send(sock, msg.c_str(), msg.size(), 0);
 
-    // Read the response
     char buf[BUFFER_SIZE] = {};
     recv(sock, buf, sizeof(buf) - 1, 0);
 
     close(sock);
 
     std::string response(buf);
-    // Strip trailing newline
     while (!response.empty() && (response.back() == '\n' || response.back() == '\r'))
         response.pop_back();
 
     return response;
 }
 
-// ---------------------------------------------------------------------------
-// Main — interactive CLI loop
-// ---------------------------------------------------------------------------
 int main() {
     std::cout << "=== Distributed KV Store Client ===\n";
     std::cout << "Commands: PUT <key> <value> | GET <key> | DELETE <key> | quit\n\n";
@@ -71,7 +53,6 @@ int main() {
         if (line == "quit" || line == "exit") break;
         if (line.empty()) continue;
 
-        // Extract key for routing
         std::istringstream ss(line);
         std::string op, key;
         ss >> op >> key;
